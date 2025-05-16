@@ -54,9 +54,50 @@ class FileOrganizer:
 def main():
     root = tk.Tk()
     root.title("File Organizer")
-    root.geometry("500x300")
+    root.geometry("500x350")
     
-    # TODO: add GUI components
+    organizer = FileOrganizer()
+    
+    # Labels and buttons
+    tk.Label(root, text="File Organizer", font=("Arial", 16, "bold")).pack(pady=10)
+    
+    source_frame = tk.Frame(root)
+    source_frame.pack(pady=10)
+    tk.Label(source_frame, text="Source Directory:").pack(side=tk.LEFT)
+    source_label = tk.Label(source_frame, text="Not selected", fg="gray")
+    source_label.pack(side=tk.LEFT, padx=(10, 0))
+    
+    def select_source():
+        folder = filedialog.askdirectory(title="Select Source Folder")
+        if folder:
+            organizer.set_source_directory(folder)
+            source_label.config(text=folder, fg="black")
+    
+    tk.Button(root, text="Select Source Folder", command=select_source).pack(pady=5)
+    
+    target_frame = tk.Frame(root)
+    target_frame.pack(pady=10)
+    tk.Label(target_frame, text="Target Directory:").pack(side=tk.LEFT)
+    target_label = tk.Label(target_frame, text="Not selected", fg="gray")
+    target_label.pack(side=tk.LEFT, padx=(10, 0))
+    
+    def select_target():
+        folder = filedialog.askdirectory(title="Select Target Folder")
+        if folder:
+            organizer.set_target_directory(folder)
+            target_label.config(text=folder, fg="black")
+    
+    tk.Button(root, text="Select Target Folder", command=select_target).pack(pady=5)
+    
+    def organize():
+        try:
+            files_moved = organizer.organize_files()
+            messagebox.showinfo("Success", f"Successfully organized {files_moved} files!")
+        except Exception as e:
+            messagebox.showerror("Error", f"An error occurred: {str(e)}")
+    
+    tk.Button(root, text="Organize Files", command=organize, 
+              bg="green", fg="white", font=("Arial", 12)).pack(pady=20)
     
     root.mainloop()
 
