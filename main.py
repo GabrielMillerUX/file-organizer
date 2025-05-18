@@ -35,18 +35,36 @@ class FileOrganizer:
     def organize_files(self):
         if not self.source_dir or not self.target_dir:
             raise ValueError("Source and target directories must be set")
+        
+        if not self.source_dir.exists():
+            raise FileNotFoundError(f"Source directory does not exist: {self.source_dir}")
+        
+        if not self.target_dir.exists():
+            raise FileNotFoundError(f"Target directory does not exist: {self.target_dir}")
             
         files_moved = 0
         
         for file_path in self.source_dir.iterdir():
             if file_path.is_file():
-                category = self.get_file_category(file_path)
-                category_dir = self.target_dir / category
-                category_dir.mkdir(exist_ok=True)
-                
-                dest_path = category_dir / file_path.name
-                shutil.move(str(file_path), str(dest_path))
-                files_moved += 1
+                try:
+                    category = self.get_file_category(file_path)
+                    category_dir = self.target_dir / category
+                    category_dir.mkdir(exist_ok=True)
+                    
+                    dest_path = category_dir / file_path.name
+                    
+                    # Handle duplicate filenames
+                    counter = 1
+                    while dest_path.exists():
+                        name_parts = file_path.stem, counter, file_path.suffix
+                        dest_path = category_dir / f"{name_parts[0]}_{name_parts[1]}{name_parts[2]}"
+                        counter += 1
+                    
+                    shutil.move(str(file_path), str(dest_path))
+                    files_moved += 1
+                except Exception as e:
+                    print(f"Error moving {file_path}: {e}")
+                    continue
                 
         return files_moved
 
