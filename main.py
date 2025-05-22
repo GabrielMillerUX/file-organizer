@@ -5,19 +5,14 @@ import shutil
 from pathlib import Path
 import tkinter as tk
 from tkinter import filedialog, messagebox
+from config import Config
 
 class FileOrganizer:
     def __init__(self):
+        self.config = Config()
         self.source_dir = None
         self.target_dir = None
-        self.file_categories = {
-            'images': ['.jpg', '.jpeg', '.png', '.gif', '.bmp', '.svg'],
-            'documents': ['.pdf', '.doc', '.docx', '.txt', '.rtf', '.odt'],
-            'videos': ['.mp4', '.avi', '.mkv', '.mov', '.wmv', '.flv'],
-            'audio': ['.mp3', '.wav', '.flac', '.aac', '.ogg'],
-            'archives': ['.zip', '.rar', '.7z', '.tar', '.gz'],
-            'code': ['.py', '.js', '.html', '.css', '.java', '.cpp', '.c']
-        }
+        self.file_categories = self.config.get_file_categories()
         
     def set_source_directory(self, path):
         self.source_dir = Path(path)
@@ -41,6 +36,8 @@ class FileOrganizer:
         
         if not self.target_dir.exists():
             raise FileNotFoundError(f"Target directory does not exist: {self.target_dir}")
+        
+        self.config.update_last_dirs(self.source_dir, self.target_dir)
             
         files_moved = 0
         
