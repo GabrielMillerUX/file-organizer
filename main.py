@@ -6,10 +6,12 @@ from pathlib import Path
 import tkinter as tk
 from tkinter import filedialog, messagebox
 from config import Config
+from logger import FileOrganizerLogger
 
 class FileOrganizer:
     def __init__(self):
         self.config = Config()
+        self.logger = FileOrganizerLogger()
         self.source_dir = None
         self.target_dir = None
         self.file_categories = self.config.get_file_categories()
@@ -29,14 +31,18 @@ class FileOrganizer:
         
     def organize_files(self):
         if not self.source_dir or not self.target_dir:
+            self.logger.log_error("Source and target directories must be set")
             raise ValueError("Source and target directories must be set")
         
         if not self.source_dir.exists():
+            self.logger.log_error(f"Source directory does not exist: {self.source_dir}")
             raise FileNotFoundError(f"Source directory does not exist: {self.source_dir}")
         
         if not self.target_dir.exists():
+            self.logger.log_error(f"Target directory does not exist: {self.target_dir}")
             raise FileNotFoundError(f"Target directory does not exist: {self.target_dir}")
         
+        self.logger.log_operation_start(self.source_dir, self.target_dir)
         self.config.update_last_dirs(self.source_dir, self.target_dir)
             
         files_moved = 0
@@ -58,11 +64,13 @@ class FileOrganizer:
                         counter += 1
                     
                     shutil.move(str(file_path), str(dest_path))
+                    self.logger.log_file_moved(file_path, dest_path, category)
                     files_moved += 1
                 except Exception as e:
-                    print(f"Error moving {file_path}: {e}")
+                    self.logger.log_file_error(file_path, str(e))
                     continue
-                
+        
+        self.logger.log_operation_complete(files_moved)
         return files_moved
 
 
